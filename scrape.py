@@ -76,7 +76,8 @@ if __name__ == "__main__":
   driver = webdriver.Chrome(chrome_options=chrome_options)
 
   driver.get("https://tabs.ultimate-guitar.com/tab/ed-sheeran/perfect-chords-1956589")
-  chords = driver.find_elements_by_class_name("_3bHP1 _3ffP6")
+
+  chords = __scrape_chords(driver.page_source)
 
   print(chords)
 
