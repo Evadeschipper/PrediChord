@@ -24,6 +24,51 @@ def __scrape_chords(html):
 
   return chords
 
+
+def __scrape_matches(html):
+  """
+  Extract matches from the search.
+
+  Args:
+    html: string - html-content of a results page.
+  
+  Returns:
+    matches: list - matches with (song, artist, #ratings, ratings, result-type)
+  """
+
+  matches = []
+
+  # Ultimate-guitar seems to use encoded names for classes, but they seem to be consistent
+  # Code below relies on that consistency
+
+  soup = BeautifulSoup(html, features="html.parser")
+  # Skip the header row of the results
+  for result_line in soup.find_all(attrs={"class": "pZcWD"})[1:]:
+    artist, song, rating, result_type = result_line.contents
+
+    artist = artist.find("a").text
+    
+    song = song.find("a").text
+
+    stars, n_raters = rating.find(attrs={"class": "dEQ1I"}), rating.find(attrs={"class": "_31dWM"}).text
+
+    numerical_stars = 0.0
+    for star in stars.contents:
+      # Name consistently contains '_3v82_'.
+      if "_34xpF" in star["class"]:
+        numerical_stars += 0.5
+      elif "_3YfNh" in star["class"]:
+        numerical_stars += 0.
+      else:
+        numerical_stars += 1.
+    
+    result_type = result_type.text
+
+    matches.append((song, artist, n_raters, numerical_stars, result_type))
+
+  return matches
+
+
 def __check_cache_for_scrape(song_name, artist):
   """
   Read cached scrape if available.
@@ -57,13 +102,29 @@ def scrape_song(song_name, artist, force_rescrape=False):
     # Scrape is None, if cached version is not available
     if scrape:
       return scrape
+  
+  chrome_options = Options()
+  chrome_options.add_argument("--headless")
+
+  driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=op.join(op.dirname(__file__), "chromedriver"))
+
+  driver.get("https://www.ultimate-guitar.com/search.php?search_type=title&type=300&value={title}".format(
+    title=" ".join([song_name, artist]).replace(" ", "%20")
+  ))
+
+  html = driver.page_source
+
+  driver.close()
+
+
+
+  
   # TODO Requests search
   # TODO Choose the best result (X)
   # TODO Request X
   # TODO Scrape X
   # TODO Cache X
 
-  payload = {"value": ""}
   #resp = requests.get(https://www.ultimate-guitar.com/search.php?search_type=title&value=Van%20Jou)
 
 
