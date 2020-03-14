@@ -17,8 +17,12 @@ def __scrape_chords(html):
   """
 
   soup = BeautifulSoup(html, 'html.parser')
+  
+  chords = []
+  for element in soup.find_all('span', attrs={"class": "_3bHP1 _3ffP6"}):
+    chords.append(element.get_text())
 
-  return soup
+  return chords
 
 def __check_cache_for_scrape(song_name, artist):
   """
@@ -75,12 +79,10 @@ if __name__ == "__main__":
   
   driver = webdriver.Chrome(chrome_options=chrome_options)
 
-  driver.get("https://tabs.ultimate-guitar.com/tab/ed-sheeran/perfect-chords-1956589")
+  driver.get("https://tabs.ultimate-guitar.com/tab/bruno-mars/when-i-was-your-man-chords-1198871")
 
   chords = __scrape_chords(driver.page_source)
 
-  print(chords)
+  driver.close()
 
-  # response = requests.get("https://tabs.ultimate-guitar.com/tab/ed-sheeran/perfect-chords-1956589")
-  # chords = __scrape_chords(response.text)
-  # print(chords)
+  print(chords)
