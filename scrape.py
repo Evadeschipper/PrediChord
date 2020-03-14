@@ -1,6 +1,9 @@
 import requests
 import pandas as pd
 from os import path as op
+from bs4 import BeautifulSoup
+from selenium.webdriver.chrome.options import Options
+from selenium import webdriver
 
 def __scrape_chords(html):
   """
@@ -12,8 +15,10 @@ def __scrape_chords(html):
   Returns:
     chords: list - list of chords
   """
-  raise NotImplementedError()
 
+  soup = BeautifulSoup(html, 'html.parser')
+
+  return soup
 
 def __check_cache_for_scrape(song_name, artist):
   """
@@ -62,3 +67,19 @@ def scrape_csv(fp):
   df = pd.read_csv(fp, sep=";")
   for i, row in df.iterrows():
     song_name, artist = row[["song-name", "artist"]]
+
+if __name__ == "__main__":
+  
+  chrome_options = Options()
+  chrome_options.add_argument("--headless")
+  
+  driver = webdriver.Chrome(chrome_options=chrome_options)
+
+  driver.get("https://tabs.ultimate-guitar.com/tab/ed-sheeran/perfect-chords-1956589")
+  chords = driver.find_elements_by_class_name("_3bHP1 _3ffP6")
+
+  print(chords)
+
+  # response = requests.get("https://tabs.ultimate-guitar.com/tab/ed-sheeran/perfect-chords-1956589")
+  # chords = __scrape_chords(response.text)
+  # print(chords)
