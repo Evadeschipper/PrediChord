@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+import sys
 from os import path as op
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
@@ -106,8 +107,20 @@ def scrape_song(song_name, artist, force_rescrape=False):
   chrome_options = Options()
   chrome_options.add_argument("--headless")
 
-  driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=op.join(op.dirname(__file__), "chromedriver"))
-
+  if sys.platform.startswith("linux"):
+    if op.exists(op.join(op.dirname(__file__), "chromedrivers")):
+      driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=op.join(op.dirname(__file__), "chromedrivers", "chromedriver"))
+    else:
+      driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=op.join(op.dirname(__file__), "chromedriver"))
+  elif sys.platform.startswith("win32"):
+    if op.exists(op.join(op.dirname(__file__), "chromedrivers")):
+      driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=op.join(op.dirname(__file__), "chromedrivers", "chromedriver.exe"))
+    else:
+      driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=op.join(op.dirname(__file__), "chromedriver.exe"))
+  else:
+    # Try to recover with opportunistic pathing
+    driver = webdriver.Chrome(chrome_options=chrome_options)
+  
   driver.get("https://www.ultimate-guitar.com/search.php?search_type=title&type=300&value={title}".format(
     title=" ".join([song_name, artist]).replace(" ", "%20")
   ))
@@ -138,7 +151,19 @@ if __name__ == "__main__":
   chrome_options = Options()
   chrome_options.add_argument("--headless")
   
-  driver = webdriver.Chrome(chrome_options=chrome_options)
+  if sys.platform.startswith("linux"):
+    if op.exists(op.join(op.dirname(__file__), "chromedrivers")):
+      driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=op.join(op.dirname(__file__), "chromedrivers", "chromedriver"))
+    else:
+      driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=op.join(op.dirname(__file__), "chromedriver"))
+  elif sys.platform.startswith("win32"):
+    if op.exists(op.join(op.dirname(__file__), "chromedrivers")):
+      driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=op.join(op.dirname(__file__), "chromedrivers", "chromedriver.exe"))
+    else:
+      driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=op.join(op.dirname(__file__), "chromedriver.exe"))
+  else:
+    # Try to recover with opportunistic pathing
+    driver = webdriver.Chrome(chrome_options=chrome_options)
 
   driver.get("https://tabs.ultimate-guitar.com/tab/bruno-mars/when-i-was-your-man-chords-1198871")
 
