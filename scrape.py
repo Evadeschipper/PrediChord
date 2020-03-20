@@ -1,10 +1,14 @@
 import requests
 import pandas as pd
 import sys
+import re
+import json
 from os import path as op
+from os import listdir
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
+
 
 def __scrape_chords(html):
   """
@@ -140,6 +144,28 @@ def scrape_song(song_name, artist, force_rescrape=False):
 
   #resp = requests.get(https://www.ultimate-guitar.com/search.php?search_type=title&value=Van%20Jou)
 
+def scrape_streaming_data(datapath):
+
+  """
+  Scrape streaming data from a spotify datadump. 
+
+  Args:
+    datapath: string - path of folder with spotify datadump
+  
+  Returns:
+    data: list - list of dictionaries, each dictionary is a streamed song. 
+  """
+
+  r = re.compile("StreamingHistory")
+  jsonfiles = list(filter(r.match, listdir(datapath)))
+
+  data = []
+
+  for jsonfile in jsonfiles:
+    with open("./MyData/" + jsonfile, encoding="utf8") as f:
+      data += json.load(f)
+
+  return data
 
 def scrape_csv(fp):
   df = pd.read_csv(fp, sep=";")
@@ -147,7 +173,7 @@ def scrape_csv(fp):
     song_name, artist = row[["song-name", "artist"]]
 
 if __name__ == "__main__":
-  
+
   chrome_options = Options()
   chrome_options.add_argument("--headless")
   
