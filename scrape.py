@@ -144,35 +144,61 @@ def scrape_song(song_name, artist, force_rescrape=False):
 
   #resp = requests.get(https://www.ultimate-guitar.com/search.php?search_type=title&value=Van%20Jou)
 
+def scrape_csv(fp):
+  df = pd.read_csv(fp, sep=";")
+  for i, row in df.iterrows():
+    song_name, artist = row[["song-name", "artist"]]
+
 def scrape_streaming_data(datapath):
 
   """
   Scrape streaming data from a spotify datadump. 
 
   Args:
-    datapath: string - path of folder with spotify datadump
+    datapath: string - path of folder with spotify datadump.
   
   Returns:
-    data: list - list of dictionaries, each dictionary is a streamed song. 
+    df: pandas df with the streaming data. 
   """
 
   r = re.compile("StreamingHistory")
   jsonfiles = list(filter(r.match, listdir(datapath)))
 
-  data = []
+  jsonlist = []
 
   for jsonfile in jsonfiles:
-    with open("./MyData/" + jsonfile, encoding="utf8") as f:
-      data += json.load(f)
+    with open(datapath + "/" + jsonfile, encoding="utf8") as f:
+      jsonlist += json.load(f)
 
-  return data
+  endTime = []
+  artistName = []
+  trackName = []
+  msPlayed = []
 
-def scrape_csv(fp):
-  df = pd.read_csv(fp, sep=";")
-  for i, row in df.iterrows():
-    song_name, artist = row[["song-name", "artist"]]
+  for play in jsonlist:
+    endTime.append(play.get('endTime'))
+    artistName.append(play.get('artistName'))
+    trackName.append(play.get('trackName'))
+    msPlayed.append(play.get('msPlayed'))
+
+  data = {'endTime':  endTime,
+        'artistName': artistName,
+        'trackName': trackName,
+        'msPlayed': msPlayed}
+
+  df = pd.DataFrame(data, columns = ['endTime','artistName', 'trackName', 'msPlayed'])
+
+  # Throw out plays that lasted less than a minute.
+  df = df[df['msPlayed'] > 60000]
+
+  return df
 
 if __name__ == "__main__":
+
+"""   df = scrape_streaming_data("./MyData")
+
+  # Plays per track
+  trackCounts = df.groupby('artistName')['trackName'].value_counts() """
 
   chrome_options = Options()
   chrome_options.add_argument("--headless")
