@@ -8,7 +8,7 @@ from os import listdir
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
-
+from transpose import equiChord
 
 def __scrape_chords(html):
   """
@@ -25,8 +25,11 @@ def __scrape_chords(html):
   
   chords = []
   for element in soup.find_all('span', attrs={"class": "_3bHP1 _3ffP6"}):
-    chords.append(element.get_text())
 
+    chord = element.get_text()
+    chord = equiChord(chord)
+    chords.append(chord)
+  
   return chords
 
 

@@ -54,20 +54,22 @@ def equiChord (chord):
     Parameters
     ----------
     chord : str
-        A flat chord that starts with a capital letter.
+        A chord that starts with a capital letter. Base note behind forward slash is supported.
+
+    Returns:
+        chord : str - chord changed to equivalent if necessary.
     """
 
     equiChords = {"Db":"C#", "Eb":"D#", "Gb":"F#", "Ab":"G#", "Bb":"A#"}
 
-    if chord not in equiChords.keys() :
-        raise ValueError("The chord doesn't need an equivalent version.")
-
     pattern = re.compile(r"[A-G]+[b]+")
     matches = pattern.findall(chord)
-
+    
     for match in matches:
-        equiChord = equiChords.get(match)
+        transmatch = equiChords.get(match)
+        chord = re.sub(match, transmatch, chord)
 
-    return (equiChord)
+    return (chord)
+
 
 
