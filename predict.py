@@ -8,20 +8,26 @@ import pickle
 from nltk.corpus import reuters
 from nltk import bigrams, trigrams
 from collections import Counter, defaultdict
+from numpy.random import choice
 
-if __name__ == "__main__":
+def train_trigrams(data):
 
-    with open('tempdata.pickle', 'rb') as handle:
-        data = pickle.load(handle)
-    
-    print(trigrams(data["https://tabs.ultimate-guitar.com/tab/adele/when-we-were-young-chords-1782038"]))
+    """
+    Build trigram model from chord data. 
 
-"""     # Create a placeholder for model
+    Args:
+        data: dict - keys are links, values are lists of chords.
+  
+    Returns:
+        model: dictionary of dictionaries containing probabilities of chord following two other chords.
+    """
+
+    # Create a placeholder for model
     model = defaultdict(lambda: defaultdict(lambda: 0))
 
     # Count frequency of co-occurance  
-    for songchords in data.items():
-        for w1, w2, w3 in trigrams(songchords, pad_right=True, pad_left=True):
+    for chords in data.values():
+        for w1, w2, w3 in trigrams(chords, pad_right=True, pad_left=True):
             model[(w1, w2)][w3] += 1
     
     # Let's transform the counts to probabilities
@@ -29,8 +35,85 @@ if __name__ == "__main__":
         total_count = float(sum(model[w1_w2].values()))
         for w3 in model[w1_w2]:
             model[w1_w2][w3] /= total_count
+
+    return model
+
+def train_bigrams(data):
+
+    """
+    Build bigram model from chord data. 
+
+    Args:
+        data: dict - keys are links, values are lists of chords.
+  
+    Returns:
+        model: dictionary of dictionaries containing probabilities of a chord following a chord.
+    """
+
+    # Create a placeholder for model
+    model = defaultdict(lambda: defaultdict(lambda: 0))
+
+    # Count frequency of co-occurance  
+    for chords in data.values():
+        for w1, w2 in bigrams(chords, pad_right=True, pad_left=True):
+            model[w1][w2] += 1
     
-    for key, value in model:
-        print(key, value) """
+    # Let's transform the counts to probabilities
+    for w1 in model:
+        total_count = float(sum(model[w1].values()))
+        for w2 in model[w1]:
+            model[w1][w2] /= total_count
+
+    return model
+
+def generate_chord(pre, model):
+    
+    """
+    Generates a chord based on chord(s) input, stochastically, based on model probabilities. 
+
+    Args:
+        pre: either a string (for one chord) or a tuple of strings (for several chords). 
+        model: dictionary of dictionaries containing probabilities of a chord following (a) chord(s).
+  
+    Returns:
+        chord: str - generated chord. 
+    """
+
+    pre_dict = model.get(pre)
+
+    post_chords = []
+    post_probs = []
+
+    for postchord in pre_dict:
+
+        post_chords.append(postchord)
+        post_probs.append(pre_dict.get(postchord))
+    
+    chord = choice(a = post_chords, size = 1, p = post_probs)
+
+    return chord
+
+if __name__ == "__main__":
+
+    with open('tempdata.pickle', 'rb') as handle:
+        data = pickle.load(handle)
+
+    model = train_bigrams(data)
+    test = generate_chord("Em", model)
+    print(test)
+    
+"""     for prechord, postchord in model.items():
+        for postchord in model.get(prechord):
+            print(prechord)
+            print(postchord)
+            print(model[prechord][postchord]) """
+
+"""     model = train_trigrams(data)
+    
+    for prechords, postchord in model.items():
+        for postchord in model.get(prechords):
+            print(prechords)
+            print(postchord)
+            print(model[prechords][postchord]) """
 
         
