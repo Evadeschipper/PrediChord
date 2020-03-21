@@ -90,8 +90,37 @@ def generate_chord(pre, model):
         post_probs.append(pre_dict.get(postchord))
     
     chord = choice(a = post_chords, size = 1, p = post_probs)
+    while None in chord:
+        chord = choice(a = post_chords, size = 1, p = post_probs)
+
+    chord = ''.join(chord)
 
     return chord
+
+def generate_sequence(inputchord, model, n):
+
+    """
+    Generates a chord sequence based on chord(s) input. 
+
+    Args:
+        input: either a string (for one chord) or a tuple of strings (for several chords). 
+        model: dictionary of dictionaries containing probabilities of a chord following (a) chord(s).
+        n: int - length of sequence to generate.
+  
+    Returns:
+        sequence: list - list with generated chords (str).  
+    """
+
+    sequence = [inputchord]
+    
+    i = 0
+    while i < n:
+        
+        inputchord = generate_chord(inputchord, model)
+        sequence.append(inputchord)
+        i += 1
+
+    return sequence
 
 if __name__ == "__main__":
 
@@ -99,21 +128,9 @@ if __name__ == "__main__":
         data = pickle.load(handle)
 
     model = train_bigrams(data)
-    test = generate_chord("Em", model)
-    print(test)
-    
-"""     for prechord, postchord in model.items():
-        for postchord in model.get(prechord):
-            print(prechord)
-            print(postchord)
-            print(model[prechord][postchord]) """
 
-"""     model = train_trigrams(data)
-    
-    for prechords, postchord in model.items():
-        for postchord in model.get(prechords):
-            print(prechords)
-            print(postchord)
-            print(model[prechords][postchord]) """
+    inputchord = "Em"
+    sequence = generate_sequence(inputchord, model, 20)
+    print(sequence)
 
         
