@@ -97,7 +97,7 @@ def write_midi(chord_sequence):
     #   https://midiutil.readthedocs.io/en/latest/
     #   https://stackoverflow.com/questions/11059801/how-can-i-write-a-midi-file-with-python
 
-    return midifile
+    return None
 
 if __name__ == "__main__":
 
