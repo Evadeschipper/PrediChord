@@ -42,7 +42,7 @@ def __scrape_matches(html):
         html: string - html-content of a results page.
     
     Returns:
-        matches: list - matches with (song, artist, #ratings, ratings, result-type)
+        matches: list - matches with (song, artist, #ratings, ratings, result-type, url)
     """
 
     matches = []
@@ -57,7 +57,9 @@ def __scrape_matches(html):
 
         artist = artist.find("a").text
         
-        song = song.find("a").text
+        song_a_tag = song.find("a")
+        song = song_a_tag.text
+        chord_url = song_a_tag["href"]
 
         stars, n_raters = rating.find(attrs={"class": "dEQ1I"}), rating.find(attrs={"class": "_31dWM"}).text
 
@@ -73,7 +75,7 @@ def __scrape_matches(html):
             
         result_type = result_type.text
 
-        matches.append((song, artist, n_raters, numerical_stars, result_type))
+        matches.append((song, artist, n_raters, numerical_stars, result_type, chord_url))
 
     return matches
 
