@@ -28,18 +28,18 @@ if __name__ == "__main__":
     for link in templinks:
 
         if sys.platform.startswith("linux"):
-          if op.exists(op.join(op.dirname(__file__), "chromedrivers")):
-            driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=op.join(op.dirname(__file__), "chromedrivers", "chromedriver"))
-          else:
-            driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=op.join(op.dirname(__file__), "chromedriver"))
+            if op.exists(op.join(op.dirname(__file__), "chromedrivers")):
+                driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=op.join(op.dirname(__file__), "chromedrivers", "chromedriver"))
+            else:
+                driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=op.join(op.dirname(__file__), "chromedriver"))
         elif sys.platform.startswith("win32"):
-          if op.exists(op.join(op.dirname(__file__), "chromedrivers")):
-            driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=op.join(op.dirname(__file__), "chromedrivers", "chromedriver.exe"))
-          else:
-            driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=op.join(op.dirname(__file__), "chromedriver.exe"))
+            if op.exists(op.join(op.dirname(__file__), "chromedrivers")):
+                driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=op.join(op.dirname(__file__), "chromedrivers", "chromedriver.exe"))
+            else:
+                driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=op.join(op.dirname(__file__), "chromedriver.exe"))
         else:
-          # Try to recover with opportunistic pathing
-          driver = webdriver.Chrome(chrome_options=chrome_options)
+            # Try to recover with opportunistic pathing
+            driver = webdriver.Chrome(chrome_options=chrome_options)
         
         driver.get(link)
 
