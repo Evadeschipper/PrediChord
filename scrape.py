@@ -80,6 +80,21 @@ def __scrape_matches(html):
     return matches
 
 
+def __choose_best_matching_candidate(candidates):
+    """
+    Chooses the best matching candidate according to pre-determined rules.
+
+    Args:
+        candidates: list - list of candidate tuples (song-name, artist, #ratings, avg-rating, result-type, url)
+
+    Returns:
+        candidate: tuple - 'Best' matching candidate tuple (song-name, artist, #ratings, avg-rating, result-type, url)
+    """
+    # Descending list
+    candidates = sorted(candidates, key=lambda cand: cand[3], reverse=True)
+    return candidates[0]
+
+
 def __cached_scrape_available(song_name, artist):
     """
     Check cache for song specific scrape.
@@ -136,18 +151,30 @@ def scrape_song(song_name, artist, force_rescrape=False):
 
     html = driver.page_source
 
+    candidates = __scrape_matches(html)
+  
+    if not candidates:
+        # Cannot find chords if we have no candidates
+        return []
+
+    _, _, _, _, _, chord_url  = __choose_best_matching_candidate(candidates)
+
+    driver.get(chord_url)
+
+    chords_html = driver.page_source
+
+    chords = __scrape_chords(chords_html)
+
+    print(chords)
+
     driver.close()
 
-
-
-  
-    # TODO Requests search
-    # TODO Choose the best result (X)
     # TODO Request X
     # TODO Scrape X
     # TODO Cache X
 
     #resp = requests.get(https://www.ultimate-guitar.com/search.php?search_type=title&value=Van%20Jou)
+
 
 def scrape_csv(fp):
     df = pd.read_csv(fp, sep=";")
