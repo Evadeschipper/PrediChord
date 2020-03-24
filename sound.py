@@ -1,5 +1,6 @@
 
 import re
+import pandas as pd
 
 def chord_to_notes(chord):
 
@@ -81,6 +82,12 @@ def chord_to_notes(chord):
 
     return chordnotes
 
+def note_to_pitch(note):
+
+    pitches = pd.read_csv("frequencies.csv")
+    pitch = float(pitches['Frequency'][pitches['Note'] == note])
+
+    return pitch
     
 def write_midi(chord_sequence):
 
@@ -94,4 +101,4 @@ def write_midi(chord_sequence):
 
 if __name__ == "__main__":
 
-    print(chord_to_notes("F#sus4/B#"))
+    print(note_to_pitch("G#5"))
