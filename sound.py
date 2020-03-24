@@ -1,6 +1,7 @@
 
 import re
 import pandas as pd
+from midiutil.MidiFile import MIDIFile
 
 def chord_to_notes(chord):
 
@@ -85,20 +86,46 @@ def chord_to_notes(chord):
 def note_to_pitch(note):
 
     pitches = pd.read_csv("frequencies.csv")
-    pitch = float(pitches['Frequency'][pitches['Note'] == note])
+    pitch = int(pitches['Number'][pitches['Note'] == note])
 
     return pitch
     
-def write_midi(chord_sequence):
+def write_midi(chord_sequence, filename):
 
-    # Change chords to notes (list of tuples?) -> def chord_to_notes(chord)
-    # Change notes to pitches (list of tuples?) -> def note_to_pitch(note), https://pages.mtu.edu/~suits/notefreqs.html
-    # Write pitches to midi file:
-    #   https://midiutil.readthedocs.io/en/latest/
-    #   https://stackoverflow.com/questions/11059801/how-can-i-write-a-midi-file-with-python
+    # create your MIDI object
+    mf = MIDIFile(1)    # only 1 track
+    track = 0           # the only track
 
-    return midifile
+    time = 0            # start at the beginning
+    duration = 1        # chords will be 1 beat long
+
+    mf.addTrackName(track, time, "Sample Track")
+    mf.addTempo(track, time, 60)
+
+    # add some notes
+    channel = 0
+    volume = 100
+
+    for chord in chord_sequence:
+
+        # Change chords to notes (list of tuples?) -> def chord_to_notes(chord)
+        notes = chord_to_notes(chord)
+
+        for note in notes:
+            pitch = note_to_pitch(note)
+            mf.addNote(track, channel, pitch, time, duration, volume)
+            
+        # Write pitches to midi file:
+        #   https://midiutil.readthedocs.io/en/latest/
+        #   https://stackoverflow.com/questions/11059801/how-can-i-write-a-midi-file-with-python
+
+        time += 2
+
+    # write it to disk
+    with open(filename + ".mid", 'wb') as outf:
+        mf.writeFile(outf)
 
 if __name__ == "__main__":
 
-    print(note_to_pitch("G#5"))
+    chord_sequence = ['Em', 'Cadd9', 'G', 'D', 'Em', 'G', 'D', 'Em', 'F', 'C', 'G', 'D', 'E', 'C#m', 'F#m', 'D', 'A', 'Bm', 'G', 'Am', 'C/G']
+    write_midi(chord_sequence, "test")
