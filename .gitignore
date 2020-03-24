@@ -130,3 +130,6 @@ dmypy.json
 
 # VS-code environment
 .vscode
+
+# Cached chords
+data/cache

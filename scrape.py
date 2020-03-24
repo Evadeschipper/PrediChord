@@ -5,7 +5,7 @@ import re
 import json
 import warnings
 from os import path as op
-from os import listdir
+from os import listdir, mkdir
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
@@ -95,6 +95,23 @@ def __choose_best_matching_candidate(candidates):
     return candidates[0]
 
 
+def __cache_path(song_name, artist):
+    """
+    Encodes a cache-path for given song & artist combination.
+
+    Args:
+        song_name: string - name of the song
+        artis: string - name of the main artist
+    
+    Returns:
+        cache_path: str - deterministicly created file-path for song
+    """
+    cache_name = "-".join([artist, song_name]) + ".json"
+    cache_path = op.join(op.dirname(__file__), "data", "cache", cache_name)
+
+    return cache_path
+
+
 def __cached_scrape_available(song_name, artist):
     """
     Check cache for song specific scrape.
@@ -106,9 +123,9 @@ def __cached_scrape_available(song_name, artist):
     Returns:
         is_available: boolean
     """
-    # CHECK EXPECTED PATH FOR A SCRAPE
-    return False
+    cache_path = __cache_path(song_name, artist)
 
+    return op.exists(cache_path)
 
 def scrape_song(song_name, artist, force_rescrape=False):
     """
@@ -125,9 +142,9 @@ def scrape_song(song_name, artist, force_rescrape=False):
 
     if not force_rescrape:
         if __cached_scrape_available(song_name, artist):
-            warnings.warn("Cache usage not implemented, scraping again.")
-            pass
-  
+            with open(__cache_path(song_name, artist), "r") as cache_file:
+                return json.load(cache_file)
+
     chrome_options = Options()
     chrome_options.add_argument("--headless")
 
@@ -165,15 +182,18 @@ def scrape_song(song_name, artist, force_rescrape=False):
 
     chords = __scrape_chords(chords_html)
 
-    print(chords)
-
     driver.close()
 
-    # TODO Request X
-    # TODO Scrape X
-    # TODO Cache X
+    if chords:
+        # Cache the results
+        cache_folder = op.join(op.dirname(__file__), "data", "cache")
 
-    #resp = requests.get(https://www.ultimate-guitar.com/search.php?search_type=title&value=Van%20Jou)
+        if not op.exists(cache_folder):
+            mkdir(cache_folder)
+        with open(__cache_path(song_name, artist), "w+") as cache_file:
+            json.dump(chords, cache_file)
+    
+    return chords
 
 
 def scrape_csv(fp):
