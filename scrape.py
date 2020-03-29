@@ -143,7 +143,13 @@ def scrape_song(song_name, artist, force_rescrape=False):
     if not force_rescrape:
         if __cached_scrape_available(song_name, artist):
             with open(__cache_path(song_name, artist), "r") as cache_file:
-                return json.load(cache_file)
+                try:
+                    cached_song = json.load(cache_file)
+                    return cached_song["Chords"]
+                except (KeyError, TypeError):
+                    # Really old caches consist on list -> TypeError for indexing
+                    # KeyError to check that the attribute exists
+                    warnings.warn("Cached file did not contain expected key 'Chords'. Rescraping the song")
 
     chrome_options = Options()
     chrome_options.add_argument("--headless")
@@ -175,7 +181,7 @@ def scrape_song(song_name, artist, force_rescrape=False):
         driver.close()
         return []
 
-    _, _, _, _, _, chord_url  = __choose_best_matching_candidate(candidates)
+    UG_song_name, UG_artist, _, _, _, chord_url  = __choose_best_matching_candidate(candidates)
 
     driver.get(chord_url)
 
@@ -192,7 +198,13 @@ def scrape_song(song_name, artist, force_rescrape=False):
         if not op.exists(cache_folder):
             mkdir(cache_folder)
         with open(__cache_path(song_name, artist), "w+") as cache_file:
-            json.dump(chords, cache_file)
+            cache_dump = {
+                "UltimateGuitar-song_name": UG_song_name,
+                "UltimateGuitar-artist": UG_artist,
+                "UltimageGuitar-song_url": chord_url,
+                "Chords": chords
+            }
+            json.dump(cache_dump, cache_file, indent=4)
     
     return chords
 
