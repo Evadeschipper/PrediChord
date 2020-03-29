@@ -172,6 +172,7 @@ def scrape_song(song_name, artist, force_rescrape=False):
   
     if not candidates:
         # Cannot find chords if we have no candidates
+        driver.close()
         return []
 
     _, _, _, _, _, chord_url  = __choose_best_matching_candidate(candidates)
