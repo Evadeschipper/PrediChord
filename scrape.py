@@ -114,6 +114,11 @@ def __scrape_matches(html):
         song = song_a_tag.text
         chord_url = song_a_tag["href"]
 
+        result_type = result_type.text
+
+        if result_type != "chords":
+            continue
+
         # Skip official version of song on UG.
         if rating.find(attrs={"class": "dEQ1I"}) is None:
             continue
@@ -129,8 +134,9 @@ def __scrape_matches(html):
                 numerical_stars += 0.
             else:
                 numerical_stars += 1.
-            
-        result_type = result_type.text
+        
+        n_raters = re.sub(r",", "", n_raters)
+        n_raters = int(n_raters)
 
         matches.append((song, artist, n_raters, numerical_stars, result_type, chord_url))
 
@@ -148,8 +154,23 @@ def __choose_best_matching_candidate(candidates):
         candidate: tuple - 'Best' matching candidate tuple (song-name, artist, #ratings, avg-rating, result-type, url)
     """
     # Descending list
-    candidates = sorted(candidates, key=lambda cand: cand[3], reverse=True)
-    return candidates[0]
+    sort_on_nratings = sorted(candidates, key=lambda cand: cand[2], reverse=True)
+
+    # Take the one with the most votes
+    selected = sort_on_nratings[0]
+
+    # Unless it has a rating lower than 4.
+    if selected[3] < 4:
+
+        sort_on_rating = sorted(candidates, key=lambda cand: cand[3], reverse=True)
+
+        # If there is one with a rating higher than 4, select that one. 
+        if sort_on_rating[0][3] > 4:
+            selected = sort_on_rating[0]
+
+    print(selected)
+
+    return selected
 
 
 def __cache_path(song_name, artist):
@@ -267,8 +288,7 @@ def scrape_song(song_name, artist, force_rescrape=False):
 
 if __name__ == "__main__":
 
-    chords = scrape_song("When I was your man", "Bruno Mars", force_rescrape = True)
-    print(chords)
+    chords = scrape_song("I'm like a bird", "Nelly Furtado", force_rescrape = True)
 
     """   df = scrape_streaming_data("./MyData")
 
