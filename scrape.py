@@ -313,7 +313,7 @@ def scrape_song(song_name, artist, force_rescrape=False):
 
 if __name__ == "__main__":
 
-    chords = scrape_song("Wake me up", "Avicii", force_rescrape = True)
+    chords = scrape_song("Symphony", "Clean Bandit", force_rescrape = True)
     print(chords)
 
     # "Robot Rock / Oh yeah", "Daft Punk"
