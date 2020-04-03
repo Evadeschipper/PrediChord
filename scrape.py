@@ -12,6 +12,13 @@ from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from transpose import equiChord
 
+class MatchNotFoundError(Exception):
+    """
+    Raised when Ultimate Guitar did not yield a match.
+    """
+    pass
+
+
 def scrape_csv(fp):
     df = pd.read_csv(fp, sep=";")
     for i, row in df.iterrows():
@@ -160,32 +167,40 @@ def __choose_best_matching_candidate(candidates, artist):
         candidate: tuple - 'Best' matching candidate tuple (song-name, artist, #ratings, avg-rating, result-type, url)
     """
 
-    matched_artists = []
+    artist_names = set()
     for match in candidates:
-        matched_artists.append(match[1])
-    matched_artists = list(set(matched_artists))
+        artist_names.add(match[1])
 
     # If there is more than 1 matched artist:
-    if len(matched_artists) > 1:
-        distance = []
+    if len(artist_names) > 1:
+        
+        best_distance = 10000
+        best_artist = ""
 
         # Calculate the levenshtein edit distance between the searched artist name and the artist names in the search results.
-        for matched_artist in matched_artists:
-            distance.append(editdistance.eval(matched_artist, artist))
-        
-        # Find the artist with the smallest edit distance.
-        correct_artist = matched_artists[distance.index(min(distance))]
+        for matched_artist in artist_names:
+            distance = editdistance.eval(matched_artist, artist)
+            if distance < best_distance:
+                best_distance = distance
+                best_artist = matched_artist
 
-        # Then exclude from candidates all matches that do not have that artist. 
-        for match in candidates:
-            if match[1] != correct_artist:
-                candidates.remove(match)
+        # Then exclude from candidates all matches that are NOT from the best artist
+        candidates = [candidate for candidate in candidates if candidate[1] == best_artist]
+    else:
+        best_artist = artist_names.pop()
+        best_distance = editdistance.eval(best_artist, artist)
+
+    # Threshold candidate name to the artist name
+    ratio = best_distance/len(artist)
+    # Allow ~15% difference
+    if ratio > 0.15:
+        raise MatchNotFoundError("Closest artist is too far of the queried artist")
 
     # Descending list
-    sort_on_nratings = sorted(candidates, key=lambda cand: cand[2], reverse=True)
+    sort_on_num_ratings = sorted(candidates, key=lambda cand: cand[2], reverse=True)
 
     # Take the one with the most votes
-    selected = sort_on_nratings[0]
+    selected = sort_on_num_ratings[0]
 
     # Unless it has a rating lower than 4.
     if selected[3] < 4:
@@ -195,8 +210,6 @@ def __choose_best_matching_candidate(candidates, artist):
         # If there is one with a rating higher than 4, select that one. 
         if sort_on_rating[0][3] > 4:
             selected = sort_on_rating[0]
-
-    print(selected)
 
     return selected
 
@@ -289,7 +302,12 @@ def scrape_song(song_name, artist, force_rescrape=False):
         driver.close()
         return []
 
-    UG_song_name, UG_artist, _, _, _, chord_url  = __choose_best_matching_candidate(candidates, artist)
+    try:
+        UG_song_name, UG_artist, _, _, _, chord_url  = __choose_best_matching_candidate(candidates, artist)
+    except MatchNotFoundError:
+        driver.close()
+        return []
+
 
     driver.get(chord_url)
 
