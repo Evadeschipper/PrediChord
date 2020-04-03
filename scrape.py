@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from transpose import equiChord
-from Levenshtein import iterative_levenshtein
+from edit_distance import iterative_levenshtein
 
 def scrape_csv(fp):
     df = pd.read_csv(fp, sep=";")
@@ -148,28 +148,34 @@ def __scrape_matches(html):
     return matches
 
 
-def __choose_best_matching_candidate(candidates):
+def __choose_best_matching_candidate(candidates, artist):
     """
     Chooses the best matching candidate according to pre-determined rules.
 
     Args:
         candidates: list - list of candidate tuples (song-name, artist, #ratings, avg-rating, result-type, url)
+        artist: str - original artist name in search query
 
     Returns:
         candidate: tuple - 'Best' matching candidate tuple (song-name, artist, #ratings, avg-rating, result-type, url)
     """
 
-    # artists = []
-    # for match in matches:
-    #     artists.append(match[1])
-    # artists = set(artists)
+    matched_artists = []
+    for match in candidates:
+        matched_artists.append(match[1])
+    matched_artists = set(matched_artists)
 
-    # if len(artists) > 1:
-    #     distance = []
-    #     for artist in artists:
-    #         iterative_levenshtein(, artist)
+    # If there is more than 1 matched artist:
+    if len(matched_artists) > 1:
+        distance = []
 
-    # If there is more than 1 artist, find the artist with the smallest edit distance. 
+        # Calculate the levenshtein edit distance between the searched artist name and the artist names in the search results.
+        for matched_artist in matched_artists:
+            distance.append(iterative_levenshtein(matched_artist, artist))
+        
+        print(distance)
+
+    # If there is more than 1 artist: find the artist with the smallest edit distance. 
     # Then exclude from candidates all matches that do not have that artist. 
 
     # Descending list
@@ -278,7 +284,7 @@ def scrape_song(song_name, artist, force_rescrape=False):
         driver.close()
         return []
 
-    UG_song_name, UG_artist, _, _, _, chord_url  = __choose_best_matching_candidate(candidates)
+    UG_song_name, UG_artist, _, _, _, chord_url  = __choose_best_matching_candidate(candidates, artist)
 
     driver.get(chord_url)
 
@@ -307,13 +313,14 @@ def scrape_song(song_name, artist, force_rescrape=False):
 
 if __name__ == "__main__":
 
-    chords = scrape_song("Symphony", "Clean Bandit", force_rescrape = True)
+    chords = scrape_song("Wake me up", "Avicii", force_rescrape = True)
     print(chords)
 
     # "Robot Rock / Oh yeah", "Daft Punk"
     # "I'm like a bird", "Nelly Furtado"
     # "Perfect", "Ed Sheeran"
     # "Symphony", "Clean Bandit"
+    # "Wake me up", "Avicii"
 
     """   df = scrape_streaming_data("./MyData")
 
