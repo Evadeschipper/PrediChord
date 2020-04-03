@@ -274,6 +274,8 @@ def scrape_song(song_name, artist, force_rescrape=False):
         # Try to recover with opportunistic pathing
         driver = webdriver.Chrome(chrome_options=chrome_options)
     
+    song_name = re.sub(r' \((feat\.|with)[^)]*\)', '', song_name)
+
     driver.get("https://www.ultimate-guitar.com/search.php?search_type=title&type=300&value={title}".format(
         title=" ".join([song_name, artist]).replace(" ", "%20")
     ))
@@ -316,13 +318,13 @@ def scrape_song(song_name, artist, force_rescrape=False):
 
 if __name__ == "__main__":
 
-    chords = scrape_song("Wake me up", "Avicii", force_rescrape = True)
+    chords = scrape_song("Symphony (feat. Zara Larsson)", "Clean Bandit", force_rescrape = True)
     print(chords)
 
     # "Robot Rock / Oh yeah", "Daft Punk"
     # "I'm like a bird", "Nelly Furtado"
     # "Perfect", "Ed Sheeran"
-    # "Symphony", "Clean Bandit"
+    # "Symphony (feat. Zara Larsson)", "Clean Bandit"
     # "Wake me up", "Avicii"
 
     """   df = scrape_streaming_data("./MyData")
