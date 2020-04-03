@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from transpose import equiChord
+from Levenshtein import iterative_levenshtein
 
 def scrape_csv(fp):
     df = pd.read_csv(fp, sep=";")
@@ -100,46 +101,50 @@ def __scrape_matches(html):
 
     soup = BeautifulSoup(html, features="html.parser")
     cur_artist = None
-    # Skip the header row of the results
-    for result_line in soup.find_all(attrs={"class": "pZcWD"})[1:]:
-        artist, song, rating, result_type = result_line.contents
-        
-        if artist.find("a") is not None:
-            artist = artist.find("a").text
-            cur_artist = artist
-        else:
-            artist = cur_artist
-        
-        song_a_tag = song.find("a")
-        song = song_a_tag.text
-        chord_url = song_a_tag["href"]
 
-        result_type = result_type.text
-
-        if result_type != "chords":
-            continue
-
-        # Skip official version of song on UG.
-        if rating.find(attrs={"class": "dEQ1I"}) is None:
-            continue
-
-        stars, n_raters = rating.find(attrs={"class": "dEQ1I"}), rating.find(attrs={"class": "_31dWM"}).text
-
-        numerical_stars = 0.0
-        for star in stars.contents:
-            # Name consistently contains '_3v82_'.
-            if "_34xpF" in star["class"]:
-                numerical_stars += 0.5
-            elif "_3YfNh" in star["class"]:
-                numerical_stars += 0.
+    if soup.find(attrs={"class": "pZcWD"}) is None:
+        matches = []
+    else:
+        # Skip the header row of the results
+        for result_line in soup.find_all(attrs={"class": "pZcWD"})[1:]:
+            artist, song, rating, result_type = result_line.contents
+            
+            if artist.find("a") is not None:
+                artist = artist.find("a").text
+                cur_artist = artist
             else:
-                numerical_stars += 1.
+                artist = cur_artist
+            
+            song_a_tag = song.find("a")
+            song = song_a_tag.text
+            chord_url = song_a_tag["href"]
+
+            result_type = result_type.text
+
+            if result_type != "chords":
+                continue
+
+            # Skip official version of song on UG.
+            if rating.find(attrs={"class": "dEQ1I"}) is None:
+                continue
+
+            stars, n_raters = rating.find(attrs={"class": "dEQ1I"}), rating.find(attrs={"class": "_31dWM"}).text
+
+            numerical_stars = 0.0
+            for star in stars.contents:
+                # Name consistently contains '_3v82_'.
+                if "_34xpF" in star["class"]:
+                    numerical_stars += 0.5
+                elif "_3YfNh" in star["class"]:
+                    numerical_stars += 0.
+                else:
+                    numerical_stars += 1.
+            
+            n_raters = re.sub(r",", "", n_raters)
+            n_raters = int(n_raters)
+
+            matches.append((song, artist, n_raters, numerical_stars, result_type, chord_url))
         
-        n_raters = re.sub(r",", "", n_raters)
-        n_raters = int(n_raters)
-
-        matches.append((song, artist, n_raters, numerical_stars, result_type, chord_url))
-
     return matches
 
 
@@ -153,6 +158,20 @@ def __choose_best_matching_candidate(candidates):
     Returns:
         candidate: tuple - 'Best' matching candidate tuple (song-name, artist, #ratings, avg-rating, result-type, url)
     """
+
+    # artists = []
+    # for match in matches:
+    #     artists.append(match[1])
+    # artists = set(artists)
+
+    # if len(artists) > 1:
+    #     distance = []
+    #     for artist in artists:
+    #         iterative_levenshtein(, artist)
+
+    # If there is more than 1 artist, find the artist with the smallest edit distance. 
+    # Then exclude from candidates all matches that do not have that artist. 
+
     # Descending list
     sort_on_nratings = sorted(candidates, key=lambda cand: cand[2], reverse=True)
 
@@ -288,7 +307,13 @@ def scrape_song(song_name, artist, force_rescrape=False):
 
 if __name__ == "__main__":
 
-    chords = scrape_song("I'm like a bird", "Nelly Furtado", force_rescrape = True)
+    chords = scrape_song("Symphony", "Clean Bandit", force_rescrape = True)
+    print(chords)
+
+    # "Robot Rock / Oh yeah", "Daft Punk"
+    # "I'm like a bird", "Nelly Furtado"
+    # "Perfect", "Ed Sheeran"
+    # "Symphony", "Clean Bandit"
 
     """   df = scrape_streaming_data("./MyData")
 
