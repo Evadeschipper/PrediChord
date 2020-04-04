@@ -8,7 +8,7 @@ import editdistance
 import time
 import random
 from os import path as op
-from os import listdir, mkdir
+from os import listdir, mkdir, makedirs
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
@@ -248,6 +248,33 @@ def __cached_scrape_available(song_name, artist):
 
     return op.exists(cache_path)
 
+
+def __cache_chords(song_name, artist, UG_song_name, UG_artist, UG_url, UG_chords):
+    """
+    Caches the song to the disk.
+
+    Args:
+        song_name: string - Query name for the song
+        artist: string - Query name for the artist
+        UG_song_name: string - Resulting song name from UG
+        UG_artist: string - Resulting artist name from UG
+        UG_url: string - The url for the chrod page on the UG
+        UG_chords: list - Chords for the song
+    
+    Returns:
+        None
+    """
+    # Cache the results
+    with open(__cache_path(song_name, artist), "w+") as cache_file:
+        cache_dump = {
+            "UltimateGuitar-song_name": UG_song_name,
+            "UltimateGuitar-artist": UG_artist,
+            "UltimageGuitar-song_url": UG_url,
+            "Chords": UG_chords
+        }
+        json.dump(cache_dump, cache_file, indent=4)
+
+
 def scrape_song(song_name, artist, force_rescrape=False):
     """
     Scrape for song from ultimate-guitar.com
@@ -260,6 +287,11 @@ def scrape_song(song_name, artist, force_rescrape=False):
     Returns:
         chords: list - Chords for the best matching song
     """
+
+    cache_folder = op.join(op.dirname(__file__), "data", "cache")
+
+    if not op.exists(cache_folder):
+        makedirs(cache_folder)
 
     if not force_rescrape:
         if __cached_scrape_available(song_name, artist):
@@ -301,12 +333,14 @@ def scrape_song(song_name, artist, force_rescrape=False):
   
     if not candidates:
         # Cannot find chords if we have no candidates
+        __cache_chords(song_name, artist, "", "", "", [])
         driver.close()
         return []
 
     try:
         UG_song_name, UG_artist, _, _, _, chord_url  = __choose_best_matching_candidate(candidates, artist)
     except MatchNotFoundError:
+        __cache_chords(song_name, artist, "", "", "", [])
         driver.close()
         return []
 
@@ -319,20 +353,7 @@ def scrape_song(song_name, artist, force_rescrape=False):
 
     driver.close()
 
-    if chords:
-        # Cache the results
-        cache_folder = op.join(op.dirname(__file__), "data", "cache")
-
-        if not op.exists(cache_folder):
-            mkdir(cache_folder)
-        with open(__cache_path(song_name, artist), "w+") as cache_file:
-            cache_dump = {
-                "UltimateGuitar-song_name": UG_song_name,
-                "UltimateGuitar-artist": UG_artist,
-                "UltimageGuitar-song_url": chord_url,
-                "Chords": chords
-            }
-            json.dump(cache_dump, cache_file, indent=4)
+    __cache_chords(song_name, artist, UG_song_name, UG_artist, chord_url, chords)
     
     return chords
 
@@ -351,12 +372,16 @@ def throttled_scrape(song_name, artist, force_rescrape=False):
         chords: list - Chords for the best matching song
     """
 
-    chords = scrape_song(song_name, artist, force_rescrape)
+    if not __cached_scrape_available(song_name, artist) or force_rescrape:
+        # Need to request
+        chords = scrape_song(song_name, artist, force_rescrape)
+        time.sleep(3.5 + min(random.paretovariate(1.), 5))
+        return chords
+    else:
+        # If we use cache, no reason to apply throttling
+        chords = scrape_song(song_name, artist, force_rescrape)
+        return chords
 
-    # Apply a stochastic sleep, to make us look more random
-    time.sleep(3.5 + min(random.paretovariate(1.), 5))
-
-    return chords
 
 if __name__ == "__main__":
 
