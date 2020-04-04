@@ -5,6 +5,8 @@ import re
 import json
 import warnings
 import editdistance
+import time
+import random
 from os import path as op
 from os import listdir, mkdir
 from bs4 import BeautifulSoup
@@ -256,7 +258,7 @@ def scrape_song(song_name, artist, force_rescrape=False):
         force_rescape: boolean - skip the use of cached scrape
     
     Returns:
-        scrape: string - html-content of the scrape
+        chords: list - Chords for the best matching song
     """
 
     if not force_rescrape:
@@ -332,6 +334,28 @@ def scrape_song(song_name, artist, force_rescrape=False):
             }
             json.dump(cache_dump, cache_file, indent=4)
     
+    return chords
+
+
+def throttled_scrape(song_name, artist, force_rescrape=False):
+    """
+    Scrape the song from ultimate-guitar.com, applying a sleep after each scrape.
+    Lessens the chance of automated blocking.
+
+    Args:
+        song_name: string - name of the song
+        artis: string - name of the main artist
+        force_rescape: boolean - skip the use of cached scrape
+    
+    Returns:
+        chords: list - Chords for the best matching song
+    """
+
+    chords = scrape_song(song_name, artist, force_rescrape)
+
+    # Apply a stochastic sleep, to make us look more random
+    time.sleep(3.5 + min(random.paretovariate(1.), 5))
+
     return chords
 
 if __name__ == "__main__":
