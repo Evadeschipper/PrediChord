@@ -1,5 +1,5 @@
 # PrediChord
-> Here goes your awesome project description!
+> PrediChord aims to encourage your musical creativity by generating chord sequences based on your listening preferences on Spotify.
 
 ## Table of contents
 * [General info](#general-info)
@@ -10,15 +10,14 @@
 * [Project status](#project-status)
 
 ## General info
-Motivation: To have automatically created chord sequences based on our listening preferences. To help with the process of creating new music. Have the chord sequences played back to me. Jam on the violin. 
+Predichord was created to help with the process of creating new music. We hope that, by having the computer generate chord sequences based on your musical interests and by playing them back to you, your creativity will get sparked. 
 
-Uses techniques from the fields of data retrieval and natural language processing, offers many music-related functionalities. 
+The project uses techniques from the fields of data retrieval and natural language processing, and also offers many music-related functionalities. We designed the functionalities to work in the following specific order. However, most functionalities can be used standalone, if so desired. See (#features).
 
-To this end, we designed the following functionalities to work in the following specific order. However, most functionalities can be used standalone, if so desired. See (#features).
-
-- Uses your very Spotify streaming data of last 90 days (Ask spotify, link), or mine ([@Evadeschipper]), if you're just trying it out. 
-- Finds the chords for the songs you've listened to on ultimate-guitar.com. 
-- Trains an n-gram model based on the chord sequences in the songs from your data. 
+1. Uses your very Spotify streaming data of last 90 days ([ask spotify for your data here](https://www.spotify.com/ca-en/account/privacy/)), or use mine ([Eva de Schipper](https://github.com/Evadeschipper)) if you're just trying it out. 
+2. Finds the chords for the songs you've listened to on ultimate-guitar.com. 
+3. Trains an n-gram model based on the chord sequences in the songs from your data. 
+4. Generates sequences of chords in a stochastic way given a starting chord. 
 
 ## Technologies
 
@@ -26,31 +25,30 @@ To this end, we designed the following functionalities to work in the following 
 
 ## Setup
 
-Input data - what files and where? Spotify gives you a .zip with files. Extract into cloned repository. You should end up with a folder called 'MyData', in which is your streaming data
-How to run
-Requirements.txt
-Chromedriver is looked for in repository folder. 
+To run the code using [your own Spotify data](https://www.spotify.com/ca-en/account/privacy/), extract the .zip file into the PrediChord folder on your computer. You should end up with a folder called `MyData`, which contains (among other things) your streaming data.
+
+Furthermore, you will need a [chromedriver](https://chromedriver.chromium.org/). Put the program file (e.g. `chromedriver.exe` if you're running Windows) in the PrediChord folder as well. 
+
+PrediChord's dependencies are specified in the `requirements.txt` file included in the folder. You can install all required dependences using the following `pip` command. 
+
+`pip install -r requirements.txt`
 
 ## Features
 
 * Transpose a note or chord using any (positive or negative) interval.
 * Find the notes belonging to many commonly used chords. 
 * Write a midi file playing any given sequence of (commonly used) chords back to you.
-* Find the equivalent sounding sharp chord for a chord with a flat root.
 * Scrape chords from an ultimate-guitar.com webpage. 
 * Find the (likeliest) best version of the chords of a song on ultimate-guitar.com.
 * Train a bi- or trigram model, and use it to generate a chord based on the input chord(s) you choose.
-
-The repository also includes a table of the frequencies and wavelengths belonging to the pitches C0 up to and including B8. 
+* Also includes: a table of the frequencies and wavelengths belonging to the pitches C0 up to and including B8. 
 
 To-do list:
 * Implement weighting mechanisms for the chords (such as TD-IDF). 
 * Implement other commonly used prediction models. 
+* Possibly melody and/or rhythm generation in the further future.
 
 ## Examples of use
-
-Show examples of usage:
-`put-your-code-here`
 
 ## Project status
 
