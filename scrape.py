@@ -321,10 +321,10 @@ def scrape_song(song_name, artist, force_rescrape=False):
         # Try to recover with opportunistic pathing
         driver = webdriver.Chrome(chrome_options=chrome_options)
     
-    song_name = re.sub(r' \((feat\.|with)[^)]*\)', '', song_name)
+    song_name_no_featuring = re.sub(r' \((feat\.|with)[^)]*\)', '', song_name)
 
     driver.get("https://www.ultimate-guitar.com/search.php?search_type=title&type=300&value={title}".format(
-        title=" ".join([song_name, artist]).replace(" ", "%20")
+        title=" ".join([song_name_no_featuring, artist]).replace(" ", "%20")
     ))
 
     html = driver.page_source
