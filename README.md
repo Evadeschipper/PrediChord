@@ -1,5 +1,5 @@
 # PrediChord
-> PrediChord aims to encourage your musical creativity by generating chord sequences based on your listening preferences on Spotify.
+> PrediChord aims to encourage your musical creativity by generating chord sequences based on your listening history on Spotify.
 
 ## Table of contents
 * [General info](#general-info)
@@ -12,9 +12,9 @@
 ## General info
 Predichord was created to help with the process of creating new music. We hope that, by having the computer generate chord sequences based on your musical interests and by playing them back to you, your creativity will get sparked. 
 
-The project uses techniques from the fields of data retrieval and natural language processing, and also offers many music-related functionalities. We designed the functionalities to work in the following specific order. However, most functionalities can be used standalone, if so desired. See (#features).
+The project uses techniques from the fields of data retrieval and natural language processing, and also offers many music-related functionalities. We designed the functionalities to work in the following specific order. However, most functionalities can be used standalone, if so desired. See [features](#features).
 
-1. Uses your very Spotify streaming data of last 90 days ([ask spotify for your data here](https://www.spotify.com/ca-en/account/privacy/)), or use mine ([Eva de Schipper](https://github.com/Evadeschipper)) if you're just trying it out. 
+1. Uses your Spotify streaming data of last 90 days ([ask spotify for your data here](https://www.spotify.com/ca-en/account/privacy/)), or use mine ([Eva de Schipper](https://open.spotify.com/user/evadeschipper?si=aVLe_bM2QmuDv8B8xe1R0w)) if you're just trying it out. 
 2. Finds the chords for the songs you've listened to on ultimate-guitar.com. 
 3. Trains an n-gram model based on the chord sequences in the songs from your data. 
 4. Generates sequences of chords in a stochastic way given a starting chord. 
@@ -43,8 +43,8 @@ PrediChord's dependencies are specified in the `requirements.txt` file included 
 * Train a bi- or trigram model, and use it to generate a chord based on the input chord(s) you choose.
 * Also includes: a table of the frequencies and wavelengths belonging to the pitches C0 up to and including B8. 
 
-To-do list:
-* Implement weighting mechanisms for the chords (such as TD-IDF). 
+Planned improvements:
+* Implement weighting mechanisms for the chords (such as TF-IDF). 
 * Implement other commonly used prediction models. 
 * Possibly melody and/or rhythm generation in the further future.
 
