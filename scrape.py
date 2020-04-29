@@ -14,6 +14,10 @@ from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from transpose import equiChord
 
+
+REGEX_FILEPATH_GUARD = re.compile(r"\\|/|>|<|:|\"|\||\?|\*")
+
+
 class MatchNotFoundError(Exception):
     """
     Raised when Ultimate Guitar did not yield a match.
@@ -227,6 +231,8 @@ def __cache_path(song_name, artist):
     Returns:
         cache_path: str - deterministicly created file-path for song
     """
+    song_name = REGEX_FILEPATH_GUARD.sub("-", song_name)
+    artist = REGEX_FILEPATH_GUARD.sub("_", artist)
     cache_name = "-".join([artist, song_name]) + ".json"
     cache_path = op.join(op.dirname(__file__), "data", "cache", cache_name)
 
