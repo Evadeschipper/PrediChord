@@ -86,14 +86,17 @@ def __scrape_chords(html):
 
     soup = BeautifulSoup(html, 'html.parser')
     
-    chords = []
-    for element in soup.find_all('span', attrs={"class": "_3bHP1 _3ffP6"}):
+    try:
+        chords = []
+        for element in soup.find_all('span', attrs={"class": "_3bHP1 _3ffP6"}):
 
-        chord = element.get_text()
-        chord = equiChord(chord)
-        chords.append(chord)
-      
-    return chords
+            chord = element.get_text()
+            chord = equiChord(chord)
+            chords.append(chord)
+
+        return chords
+    except TypeError:
+        return []
 
 
 def __scrape_matches(html):
