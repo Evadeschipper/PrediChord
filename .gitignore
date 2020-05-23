@@ -133,3 +133,6 @@ dmypy.json
 
 # Cached chords
 data/cache
+
+# Results
+results/

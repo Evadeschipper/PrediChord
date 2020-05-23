@@ -103,7 +103,7 @@ def generate_sequence(inputchord, model, n):
     Generates a chord sequence based on chord(s) input. 
 
     Args:
-        input: either a string (for one chord) or a tuple of strings (for several chords). 
+        inputchord: either a string (for one chord) or a tuple of strings (for several chords). 
         model: dictionary of dictionaries containing probabilities of a chord following (a) chord(s).
         n: int - length of sequence to generate.
   
@@ -124,7 +124,7 @@ def generate_sequence(inputchord, model, n):
 
 if __name__ == "__main__":
 
-    with open('tempdata.pickle', 'rb') as handle:
+    with open('data/chords.pickle', 'rb') as handle:
         data = pickle.load(handle)
 
     model = train_bigrams(data)
